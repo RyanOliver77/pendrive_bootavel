@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BootUSB Creator - Criador de USB Bootável</title>
+    <style>
+        /* ============================================
+           RESET & VARIÁVEIS
+           ============================================ */
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #3b82f6;
+            --accent: #f59e0b;
+            --accent-dark: #d97706;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --bg-hover: #475569;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: #475569;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius: 8px;
+            --shadow: 0 4px 24px rgba(0,0,0,0.4);
+            --transition: all 0.25s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-image: 
+                radial-gradient(ellipse at 20% 50%, rgba(37, 99, 235, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(245, 158, 11, 0.06) 0%, transparent 50%);
+        }
+
+        /* ============================================
+           HEADER
+           ============================================ */
+        .app-header {
+            width: 100%;
+            max-width: 750px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .app-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 8px;
+        }
+
+        .app-logo svg {
+            width: 48px;
+            height: 48px;
+            filter: drop-shadow(0 0 12px rgba(37, 99, 235, 0.5));
+        }
+
+        .app-logo h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .app-header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* ============================================
+           MAIN CARD
+           ============================================ */
+        .main-card {
+            width: 100%;
+            max-width: 750px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-dark), #1e3a5f);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-header svg {
+            width: 22px;
+            height: 22px;
+            color: var(--accent);
+        }
+
+        .card-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .card-header .version-badge {
+            margin-left: auto;
+            background: rgba(255,255,255,0.15);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        /* ============================================
+           FORM ELEMENTS
+           ============================================ */
+        .form-section {
+            margin-bottom: 20px;
+        }
+
+        .form-section-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            align-items: flex-end;
+        }
+
+        .form-row.single {
+            flex-direction: column;
+        }
+
+        .form-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-group label .required {
+            color: var(--danger);
+        }
+
+        select, input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: var(--transition);
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+
+        select:focus, input[type="text"]:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+
+        select:hover, input[type="text"]:hover {
+            border-color: var(--bg-hover);
+        }
+
+        /* ============================================
+           ISO FILE UPLOAD AREA
+           ============================================ */
+        .iso-upload-area {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .iso-upload-area select {
+            flex: 1;
+        }
+
+        .btn-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .btn-icon:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border-color: var(--primary-light);
+        }
+
+        .btn-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* ============================================
+           IMAGE OPTION CARDS
+           ============================================ */
+        .image-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .image-option {
+            flex: 1;
+            min-width: 140px;
+            padding: 12px 16px;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .image-option:hover {
+            border-color: var(--bg-hover);
+            background: var(--bg-hover);
+        }
+
+        .image-option.active {
+            border-color: var(--primary-light);
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .image-option svg {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+        }
+
+        .image-option.active svg {
+            color: var(--primary-light);
+        }
+
+        .image-option .option-label {
+            font-size: 0.82rem;
+            font-weight: 500;
+            display: block;
+        }
+
+        .image-option .option-desc {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ============================================
+           CHECKBOX & TOGGLE
+           ============================================ */
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+
+        .checkbox-item:hover {
+            background: rgba(255,255,255,0.03);
+        }
+
+        .checkbox-custom {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .checkbox-item.checked .checkbox-custom {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .checkbox-custom svg {
+            width: 12px;
+            height: 12px;
+            color: white;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .checkbox-item.checked .checkbox-custom svg {
+            opacity: 1;
+        }
+
+        .checkbox-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* ============================================
+           DEVICE INFO CARD
+           ============================================ */
+        .device-info {
+            background: rgba(37, 99, 235, 0.08);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            border-radius: var(--radius);
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .device-info svg {
+            width: 28px;
+            height: 28px;
+            color: var(--primary-light);
+        }
+
+        .device-info .info-text {
+            flex: 1;
+        }
+
+        .device-info .info-text .name {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .device-info .info-text .details {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .device-info .size-badge {
+            background: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* ============================================
+           BUTTONS
+           ============================================ */
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border-radius: var(--radius);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            flex: 1;
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 24px rgba(37, 99, 235, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        /* ============================================
+           PROGRESS SECTION
+           ============================================ */
+        .progress-section {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-section.visible {
+            display: block;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .progress-status {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .progress-percentage {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-input);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* ============================================
+           LOG CONSOLE
+           ============================================ */
+        .log-section {
+            margin-top: 16px;
+            display: none;
+        }
+
+        .log-section.visible {
+            display: block;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .log-header h3 {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .log-header h3 svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .log-container {
+            background: #0a0f1a;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.78rem;
+            line-height: 1.7;
+        }
+
+        .log-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .log-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .log-container::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .log-entry {
+            display: flex;
+            gap: 8px;
+        }
+
+        .log-time {
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .log-message {
+            color: var(--text-secondary);
+        }
+
+        .log-message.success { color: var(--success); }
+        .log-message.error { color: var(--danger); }
+        .log-message.warning { color: var(--warning); }
+        .log-message.info { color: var(--info); }
+
+        /* ============================================
+           MODAL
+           ============================================ */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.visible {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            text-align: center;
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+
+        .modal-icon.warning {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
+        .modal-icon.success {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--success);
+        }
+
+        .modal-icon svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .modal h3 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        .modal p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .modal .btn-row {
+            justify-content: center;
+        }
+
+        /* ============================================
+           STATUS BAR
+           ============================================ */
+        .status-bar {
+            width: 100%;
+            max-width: 750px;
+            margin-top: 16px;
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .status-dot.idle { background: var(--text-muted); }
+        .status-dot.running { background: var(--warning); animation: pulse 1s infinite; }
+        .status-dot.done { background: var(--success); }
+        .status-dot.error { background: var(--danger); }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* ============================================
+           TOAST NOTIFICATIONS
+           ============================================ */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: var(--shadow);
+            animation: toastIn 0.3s ease;
+            min-width: 300px;
+        }
+
+        .toast.removing {
+            animation: toastOut 0.3s ease forwards;
+        }
+
+        @keyframes toastIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes toastOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        .toast svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .toast.success svg { color: var(--success); }
+        .toast.error svg { color: var(--danger); }
+        .toast.warning svg { color: var(--warning); }
+        .toast.info svg { color: var(--info); }
+
+        .toast-message {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* ============================================
+           OS PREVIEW GRID
+           ============================================ */
+        .os-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .os-card {
+            background: var(--bg-input);
+            border: 2px solid transparent;
+            border-radius: var(--radius);
+            padding: 14px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .os-card:hover {
+            border-color: var(--bg-hover);
+            transform: translateY(-2px);
+        }
+
+        .os-card.selected {
+            border-color: var(--primary-light);
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .os-card .os-icon {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 8px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        .os-card .os-name {
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .os-card .os-size {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .card-body { padding: 16px; }
+            .form-row { flex-direction: column; gap: 12px; }
+            .btn-row { flex-direction: column; }
+            .app-logo h1 { font-size: 1.5rem; }
+            .image-options { flex-direction: column; }
+            .os-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        /* ============================================
+           ANIMATIONS
+           ============================================ */
+        .fade-in {
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- HEADER -->
+    <header class="app-header fade-in">
+        <div class="app-logo">
+            <svg viewBox="0 0 48 48" fill="none">
+                <rect x="8" y="4" width="32" height="40" rx="4" stroke="currentColor" stroke-width="2.5" style="color: var(--primary-light)"/>
+                <rect x="14" y="10" width="20" height="28" rx="2" fill="var(--primary)" opacity="0.3"/>
+                <line x1="18" y1="18" x2="30" y2="18" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+                <line x1="18" y1="24" x2="26" y2="24" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+                <line x1="18" y1="30" x2="28" y2="30" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="24" cy="8" r="2" fill="var(--accent)"/>
+            </svg>
+            <h1>BootUSB Creator</h1>
+        </div>
+        <p>Crie pendrives bootáveis para instalação de sistemas operacionais</p>
+    </header>
+
+    <!-- MAIN CARD -->
+    <main class="main-card fade-in">
+        <div class="card-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+            </svg>
+            <h2>Configuração do Drive</h2>
+            <span class="version-badge">v4.2.1</span>
+        </div>
+
+        <div class="card-body">
+
+            <!-- DEVICE SECTION -->
+            <div class="form-section">
+                <div class="form-section-title">Dispositivo</div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Dispositivo <span class="required">*</span></label>
+                        <select id="deviceSelect">
+                            <option value="">-- Selecione o dispositivo --</option>
+                            <option value="usb1">USB (E:) - Kingston DataTraveler - 32 GB</option>
+                            <option value="usb2">USB (F:) - SanDisk Ultra - 64 GB</option>
+                            <option value="usb3">USB (G:) - Samsung FIT - 128 GB</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="device-info" id="deviceInfo" style="display:none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="6" y="2" width="12" height="20" rx="2"/>
+                        <line x1="10" y1="6" x2="14" y2="6"/>
+                        <line x1="10" y1="10" x2="14" y2="10"/>
+                    </svg>
+                    <div class="info-text">
+                        <div class="name" id="deviceName">--</div>
+                        <div class="details" id="deviceDetails">--</div>
+                    </div>
+                    <div class="size-badge" id="deviceSize">--</div>
+                </div>
+            </div>
+
+            <!-- BOOT SELECTION -->
+            <div class="form-section">
+                <div class="form-section-title">Seleção de Imagem</div>
+
+                <div class="image-options">
+                    <div class="image-option active" data-type="iso" onclick="selectImageType('iso')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        <span class="option-label">Imagem ISO</span>
+                        <span class="option-desc">Selecionar arquivo .iso</span>
+                    </div>
+                    <div class="image-option" data-type="freedos" onclick="selectImageType('freedos')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="16 18 22 12 16 6"/>
+                            <polyline points="8 6 2 12 8 18"/>
+                        </svg>
+                        <span class="option-label">FreeDOS</span>
+                        <span class="option-desc">MS-DOS compatível</span>
+                    </div>
+                    <div class="image-option" data-type="disk" onclick="selectImageType('disk')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <span class="option-label">Imagem de Disco</span>
+                        <span class="option-desc">IMG / DD / VHD</span>
+                    </div>
+                </div>
+
+                <div class="form-row" id="isoRow">
+                    <div class="form-group">
+                        <label>Selecionar imagem ISO <span class="required">*</span></label>
+                        <div class="iso-upload-area">
+                            <select id="isoSelect">
+                                <option value="">-- Selecione a imagem --</option>
+                                <optgroup label="Windows">
+                                    <option value="win11">Windows 11 24H2 (x64)</option>
+                                    <option value="win10">Windows 10 22H2 (x64)</option>
+                                    <option value="win10_32">Windows 10 22H2 (x86)</option>
+                                </optgroup>
+                                <optgroup label="Linux">
+                                    <option value="ubuntu24">Ubuntu 24.04 LTS (x64)</option>
+                                    <option value="ubuntu22">Ubuntu 22.04 LTS (x64)</option>
+                                    <option value="fedora40">Fedora 40 Workstation (x64)</option>
+                                    <option value="debian12">Debian 12.5 (x64)</option>
+                                    <option value="mint21">Linux Mint 21.3 Cinnamon (x64)</option>
+                                    <option value="arch">Arch Linux 2024.05 (x64)</option>
+                                    <option value="kali">Kali Linux 2024.1 (x64)</option>
+                                    <option value="popos">Pop!_OS 22.04 (x64)</option>
+                                </optgroup>
+                                <optgroup label="Servidores">
+                                    <option value="ubuntu_server">Ubuntu Server 24.04 LTS</option>
+                                    <option value="centos">AlmaLinux 9.4</option>
+                                    <option value="proxmox">Proxmox VE 8.2</option>
+                                </optgroup>
+                                <optgroup label="Utilitários">
+                                    <option value="hirens">Hiren's BootCD PE</option>
+                                    <option value="clonezilla">Clonezilla Live 3.1</option>
+                                    <option value="gparted">GParted Live 1.6</option>
+                                </optgroup>
+                            </select>
+                            <button class="btn-icon" onclick="document.getElementById('fileInput').click()" title="Selecionar arquivo local">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                            </button>
+                            <input type="file" id="fileInput" accept=".iso,.img,.dd,.vhd" style="display:none" onchange="handleFileSelect(this)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OS QUICK SELECT -->
+                <div class="form-section" style="margin-top: 12px;">
+                    <div class="form-section-title">Seleção Rápida por SO</div>
+                    <div class="os-grid" id="osGrid">
+                        <div class="os-card" onclick="selectOS(this, 'win11')">
+                            <div class="os-icon" style="background: linear-gradient(135deg, #0078d4, #00bcf2);">🪟</div>
+                            <div class="os-name">Windows 11</div>
+                            <div class="os-size">~5.4 GB</div>
+                        </div>
+                        <div class="os-card" onclick="selectOS(this, 'win10')">
+                            <div class="os-icon" style="background: linear-gradient(135deg, #0078d4, #00bcf2);">🪟</div>
+                            <div class="os-name">Windows 10</div>
+                            <div class="os-size">~4.8 GB</div>
+                        </div>
+                        <div class="os-card" onclick="selectOS(this, 'ubuntu24')">
+                            <div class="os-icon" style="background: linear-gradient(135deg, #E95420, #77216F);">🐧</div>
+                            <div class="os-name">Ubuntu 24.04</div>
+                            <div class="os-size">~4.7 GB</div>
+                        </div>
+                        <div class="os-card" onclick="selectOS(this, 'fedora40')">
+                            <div class="os-icon" style="background: linear-gradient(135deg, #294172, #3c6eb4);">🎩</div>
+                            <div class="os-name">Fedora 40</div>
+                            <div class="os-size">~2.1 GB</div>
+                        </div>
+                        <div class="os-card" onclick="selectOS(this, 'debian12')">
+                            <div class="os-icon" style="background: linear-gradient(135deg, #A80030, #D70A53);">🍦</div>
+                            <div class="os-name">Debian 12</div>
+                            <div class="os-size">~3.8 GB</div>
+                        </div>
+                        <div class="os-card" onclick="selectOS(this, 'kali')">
+                            <div class="os-icon" style="background: linear-gradient(135deg, #367bf0, #1a56c4);">🛡️</div>
+                            <div class="os-name">Kali Linux</div>
+                            <div class="os-size">~3.9 GB</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OPTIONS SECTION -->
+            <div class="form-section">
+                <div class="form-section-title">Opções de Imagem</div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Esquema de Partição</label>
+                        <select id="partitionScheme">
+                            <option value="gpt">GPT (UEFI)</option>
+                            <option value="mbr">MBR (BIOS ou UEFI)</option>
+                            <option value="mbr_uefi">MBR (UEFI CS)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Sistema de Arquivos</label>
+                        <select id="fileSystem">
+                            <option value="ntfs">NTFS</option>
+                            <option value="fat32">FAT32</option>
+                            <option value="exfat">exFAT</option>
+                            <option value="udf">UDF</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tamanho do Cluster</label>
+                        <select id="clusterSize">
+                            <option value="default">Padrão</option>
+                            <option value="512">512 bytes</option>
+                            <option value="1024">1024 bytes</option>
+                            <option value="2048">2048 bytes</option>
+                            <option value="4096">4096 bytes</option>
+                            <option value="8192">8192 bytes</option>
+                            <option value="16384">16384 bytes</option>
+                            <option value="32768">32768 bytes</option>
+                            <option value="65536">65536 bytes</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Rótulo do Volume</label>
+                        <input type="text" id="volumeLabel" value="BOOT_USB" maxlength="32" placeholder="Nome do volume">
+                    </div>
+                </div>
+
+                <div class="checkbox-group">
+                    <div class="checkbox-item checked" onclick="toggleCheck(this)">
+                        <div class="checkbox-custom">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </div>
+                        <span class="checkbox-label">Verificar bad blocks</span>
+                    </div>
+                    <div class="checkbox-item" onclick="toggleCheck(this)">
+                        <div class="checkbox-custom">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </div>
+                        <span class="checkbox-label">Criar disco de inicialização usando Extended Label</span>
+                    </div>
+                    <div class="checkbox-item" onclick="toggleCheck(this)">
+                        <div class="checkbox-custom">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </div>
+                        <span class="checkbox-label">Adicionar correções para drives USB antigos</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="btn-row">
+                <button class="btn btn-primary" id="startBtn" onclick="startProcess()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    <span id="startBtnText">INICIAR</span>
+                </button>
+                <button class="btn btn-secondary" onclick="closeApp()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                    Fechar
+                </button>
+            </div>
+
+            <!-- PROGRESS -->
+            <div class="progress-section" id="progressSection">
+                <div class="progress-header">
+                    <span class="progress-status" id="progressStatus">Preparando...</span>
+                    <span class="progress-percentage" id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="progress-details">
+                    <span id="progressSpeed">--</span>
+                    <span id="progressETA">Tempo restante: --</span>
+                </div>
+            </div>
+
+            <!-- LOG -->
+            <div class="log-section" id="logSection">
+                <div class="log-header">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="4 17 10 11 4 5"/>
+                            <line x1="12" y1="19" x2="20" y2="19"/>
+                        </svg>
+                        Log de Operação
+                    </h3>
+                </div>
+                <div class="log-container" id="logContainer"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+        <div class="status-indicator">
+            <div class="status-dot idle" id="statusDot"></div>
+            <span id="statusText">Aguardando</span>
+        </div>
+        <span>BootUSB Creator v4.2.1 | © 2026</span>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <div class="modal-icon warning" id="modalIcon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+            <h3 id="modalTitle">Atenção!</h3>
+            <p id="modalMessage">Todos os dados do dispositivo serão apagados.</p>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-danger" id="modalConfirm" onclick="confirmAction()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // STATE
+        // ============================================
+        const state = {
+            device: null,
+            iso: null,
+            imageType: 'iso',
+            partitionScheme: 'gpt',
+            fileSystem: 'ntfs',
+            clusterSize: 'default',
+            volumeLabel: 'BOOT_USB',
+            isRunning: false,
+            progressInterval: null,
+            currentProgress: 0
+        };
+
+        const deviceData = {
+            usb1: { name: 'Kingston DataTraveler 3.0', details: 'USB 3.0 • Removível', size: '32 GB' },
+            usb2: { name: 'SanDisk Ultra USB 3.0', details: 'USB 3.0 • Removível', size: '64 GB' },
+            usb3: { name: 'Samsung FIT Plus', details: 'USB 3.1 • Removível', size: '128 GB' }
+        };
+
+        const isoData = {
+            win11: { name: 'Windows 11 24H2 (x64)', size: '5.4 GB', type: 'ntfs' },
+            win10: { name: 'Windows 10 22H2 (x64)', size: '4.8 GB', type: 'ntfs' },
+            win10_32: { name: 'Windows 10 22H2 (x86)', size: '3.9 GB', type: 'ntfs' },
+            ubuntu24: { name: 'Ubuntu 24.04 LTS (x64)', size: '4.7 GB', type: 'fat32' },
+            ubuntu22: { name: 'Ubuntu 22.04 LTS (x64)', size: '3.6 GB', type: 'fat32' },
+            fedora40: { name: 'Fedora 40 Workstation (x64)', size: '2.1 GB', type: 'fat32' },
+            debian12: { name: 'Debian 12.5 (x64)', size: '3.8 GB', type: 'fat32' },
+            mint21: { name: 'Linux Mint 21.3 Cinnamon (x64)', size: '2.8 GB', type: 'fat32' },
+            arch: { name: 'Arch Linux 2024.05 (x64)', size: '0.9 GB', type: 'fat32' },
+            kali: { name: 'Kali Linux 2024.1 (x64)', size: '3.9 GB', type: 'fat32' },
+            popos: { name: 'Pop!_OS 22.04 (x64)', size: '3.1 GB', type: 'fat32' },
+            ubuntu_server: { name: 'Ubuntu Server 24.04 LTS', size: '2.5 GB', type: 'fat32' },
+            centos: { name: 'AlmaLinux 9.4', size: '2.0 GB', type: 'fat32' },
+            proxmox: { name: 'Proxmox VE 8.2', size: '1.4 GB', type: 'fat32' },
+            hirens: { name: "Hiren's BootCD PE", size: '2.8 GB', type: 'ntfs' },
+            clonezilla: { name: 'Clonezilla Live 3.1', size: '0.4 GB', type: 'fat32' },
+            gparted: { name: 'GParted Live 1.6', size: '0.3 GB', type: 'fat32' }
+        };
+
+        // ============================================
+        // DEVICE SELECTION
+        // ============================================
+        document.getElementById('deviceSelect').addEventListener('change', function() {
+            state.device = this.value;
+            const info = document.getElementById('deviceInfo');
+            if (this.value && deviceData[this.value]) {
+                const d = deviceData[this.value];
+                info.style.display = 'flex';
+                document.getElementById('deviceName').textContent = d.name;
+                document.getElementById('deviceDetails').textContent = d.details;
+                document.getElementById('deviceSize').textContent = d.size;
+                showToast('info', `Dispositivo selecionado: ${d.name}`);
+            } else {
+                info.style.display = 'none';
+            }
+        });
+
+        // ============================================
+        // IMAGE TYPE SELECTION
+        // ============================================
+        function selectImageType(type) {
+            state.imageType = type;
+            document.querySelectorAll('.image-option').forEach(el => {
+                el.classList.toggle('active', el.dataset.type === type);
+            });
+            document.getElementById('isoRow').style.display = type === 'iso' ? 'flex' : 'none';
+            if (type === 'freedos') {
+                state.iso = 'freedos';
+                showToast('info', 'FreeDOS selecionado como imagem de boot');
+            } else if (type === 'disk') {
+                state.iso = null;
+                showToast('info', 'Selecione uma imagem de disco (IMG/DD/VHD)');
+            }
+        }
+
+        // ============================================
+        // ISO SELECTION
+        // ============================================
+        document.getElementById('isoSelect').addEventListener('change', function() {
+            state.iso = this.value;
+            if (this.value && isoData[this.value]) {
+                const iso = isoData[this.value];
+                // Auto-set filesystem
+                document.getElementById('fileSystem').value = iso.type;
+                state.fileSystem = iso.type;
+                showToast('success', `ISO selecionada: ${iso.name} (${iso.size})`);
+            }
+        });
+
+        // ============================================
+        // FILE INPUT
+        // ============================================
+        function handleFileSelect(input) {
+            if (input.files.length > 0) {
+                const file = input.files[0];
+                state.iso = file.name;
+                showToast('success', `Arquivo local carregado: ${file.name}`);
+                addLog(`Arquivo local selecionado: ${file.name} (${formatBytes(file.size)})`, 'info');
+            }
+        }
+
+        // ============================================
+        // OS QUICK SELECT
+        // ============================================
+        function selectOS(card, isoKey) {
+            document.querySelectorAll('.os-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+
+            // Set the select
+            const isoSelect = document.getElementById('isoSelect');
+            isoSelect.value = isoKey;
+            state.iso = isoKey;
+
+            if (isoData[isoKey]) {
+                const iso = isoData[isoKey];
+                document.getElementById('fileSystem').value = iso.type;
+                state.fileSystem = iso.type;
+                showToast('success', `${iso.name} selecionado`);
+            }
+        }
+
+        // ============================================
+        // CHECKBOX TOGGLE
+        // ============================================
+        function toggleCheck(el) {
+            el.classList.toggle('checked');
+        }
+
+        // ============================================
+        // FORMAT HELPERS
+        // ============================================
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function getTime() {
+            return new Date().toLocaleTimeString('pt-BR');
+        }
+
+        // ============================================
+        // LOG
+        // ============================================
+        function addLog(message, type = '') {
+            const container = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <span class="log-time">[${getTime()}]</span>
+                <span class="log-message ${type}">${message}</span>
+            `;
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // ============================================
+        // TOAST
+        // ============================================
+        function showToast(type, message) {
+            const container = document.getElementById('toastContainer');
+            const icons = {
+                success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+                error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+                warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+                info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `${icons[type]}<span class="toast-message">${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('removing');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // ============================================
+        // MODAL
+        // ============================================
+        function showModal(title, message, onConfirm) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            document.getElementById('modalOverlay').classList.add('visible');
+            window._modalCallback = onConfirm;
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('visible');
+        }
+
+        function confirmAction() {
+            closeModal();
+            if (window._modalCallback) window._modalCallback();
+        }
+
+        // ============================================
+        // STATUS
+        // ============================================
+        function setStatus(status, text) {
+            const dot = document.getElementById('statusDot');
+            const txt = document.getElementById('statusText');
+            dot.className = `status-dot ${status}`;
+            txt.textContent = text;
+        }
+
+        // ============================================
+        // MAIN PROCESS
+        // ============================================
+        function startProcess() {
+            if (state.isRunning) return;
+
+            // Validation
+            if (!state.device) {
+                showToast('error', 'Selecione um dispositivo USB!');
+                return;
+            }
+            if (!state.iso && state.imageType === 'iso') {
+                showToast('error', 'Selecione uma imagem ISO!');
+                return;
+            }
+
+            // Warning modal
+            showModal(
+                '⚠️ Atenção!',
+                `Todos os dados do dispositivo "${deviceData[state.device].name}" serão apagados permanentemente. Deseja continuar?`,
+                beginWriting
+            );
+        }
+
+        function beginWriting() {
+            state.isRunning = true;
+            state.currentProgress = 0;
+
+            const btn = document.getElementById('startBtn');
+            const btnText = document.getElementById('startBtnText');
+            btn.disabled = true;
+            btnText.innerHTML = '<div class="spinner"></div> Processando...';
+
+            // Show progress & log
+            document.getElementById('progressSection').classList.add('visible');
+            document.getElementById('logSection').classList.add('visible');
+
+            setStatus('running', 'Escrevendo no dispositivo...');
+
+            // Log sequence
+            const logs = [
+                { msg: 'BootUSB Creator v4.2.1', type: 'info', delay: 200 },
+                { msg: `Dispositivo: ${deviceData[state.device].name} (${deviceData[state.device].size})`, type: '', delay: 500 },
+                { msg: `Esquema de partição: ${document.getElementById('partitionScheme').value.toUpperCase()}`, type: '', delay: 700 },
+                { msg: `Sistema de arquivos: ${document.getElementById('fileSystem').value.toUpperCase()}`, type: '', delay: 900 },
+                { msg: 'Formatando dispositivo...', type: 'warning', delay: 1200 },
+                { msg: 'Formatação concluída com sucesso.', type: 'success', delay: 2500 },
+                { msg: `Carregando imagem: ${state.iso === 'freedos' ? 'FreeDOS' : state.iso}`, type: 'info', delay: 3000 },
+                { msg: 'Verificando integridade da imagem...', type: '', delay: 3800 },
+                { msg: 'Iniciando gravação dos setores...', type: 'warning', delay: 4500 },
+                { msg: 'Gravando dados no dispositivo...', type: '', delay: 5500 },
+            ];
+
+            logs.forEach(log => {
+                setTimeout(() => addLog(log.msg, log.type), log.delay);
+            });
+
+            // Progress simulation
+            let progress = 0;
+            const speeds = ['45 MB/s', '52 MB/s', '48 MB/s', '61 MB/s', '55 MB/s', '43 MB/s', '58 MB/s', '67 MB/s', '51 MB/s'];
+
+            state.progressInterval = setInterval(() => {
+                // Variable speed
+                const increment = Math.random() * 2.5 + 0.3;
+                progress = Math.min(progress + increment, 100);
+                state.currentProgress = progress;
+
+                // Update UI
+                document.getElementById('progressBar').style.width = progress + '%';
+                document.getElementById('progressPercent').textContent = Math.round(progress) + '%';
+
+                const speed = speeds[Math.floor(Math.random() * speeds.length)];
+                document.getElementById('progressSpeed').textContent = `Velocidade: ${speed}`;
+
+                const remaining = Math.round((100 - progress) / 3);
+                document.getElementById('progressETA').textContent = `Tempo restante: ~${remaining}s`;
+
+                // Update status text based on progress
+                if (progress < 15) {
+                    document.getElementById('progressStatus').textContent = 'Formatando dispositivo...';
+                } else if (progress < 30) {
+                    document.getElementById('progressStatus').textContent = 'Preparando partições...';
+                } else if (progress < 50) {
+                    document.getElementById('progressStatus').textContent = 'Copiando arquivos do sistema...';
+                } else if (progress < 75) {
+                    document.getElementById('progressStatus').textContent = 'Gravando setores de boot...';
+                } else if (progress < 95) {
+                    document.getElementById('progressStatus').textContent = 'Finalizando gravação...';
+                } else {
+                    document.getElementById('progressStatus').textContent = 'Verificando integridade...';
+                }
+
+                // Add periodic logs
+                if (Math.random() > 0.92) {
+                    addLog(`Setor gravado: ${Math.round(progress * 142)} / 14200 blocos`, '');
+                }
+
+                if (progress >= 100) {
+                    clearInterval(state.progressInterval);
+                    completeProcess();
+                }
+            }, 300);
+        }
+
+        function completeProcess() {
+            state.isRunning = false;
+
+            const btn = document.getElementById('startBtn');
+            const btnText = document.getElementById('startBtnText');
+            btn.disabled = false;
+            btnText.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                INICIAR
+            `;
+
+            setStatus('done', 'Concluído!');
+
+            addLog('✅ Gravação concluída com sucesso!', 'success');
+            addLog('✅ Verificação de integridade: OK', 'success');
+            addLog('✅ Dispositivo pronto para boot!', 'success');
+
+            document.getElementById('progressStatus').textContent = 'Concluído!';
+            document.getElementById('progressSpeed').textContent = '';
+            document.getElementById('progressETA').textContent = '';
+
+            showToast('success', 'USB bootável criado com sucesso! 🎉');
+
+            // Success modal after a moment
+            setTimeout(() => {
+                showModal(
+                    '✅ Sucesso!',
+                    `O dispositivo "${deviceData[state.device].name}" foi configurado como bootável com sucesso. Você já pode reiniciar o computador e iniciar a instalação do sistema operacional.`,
+                    () => {
+                        showToast('info', 'Lembre-se de configurar a ordem de boot na BIOS/UEFI');
+                    }
+                );
+                document.getElementById('modalConfirm').textContent = 'OK';
+                document.getElementById('modalConfirm').className = 'btn btn-primary';
+            }, 1000);
+        }
+
+        // ============================================
+        // CLOSE APP
+        // ============================================
+        function closeApp() {
+            if (state.isRunning) {
+                showToast('error', 'Não é possível fechar durante a gravação!');
+                return;
+            }
+            showModal(
+                'Sair do BootUSB Creator',
+                'Deseja fechar o aplicativo?',
+                () => {
+                    showToast('info', 'Aplicativo fechado');
+                    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#94a3b8;font-size:1.2rem;">Aplicativo fechado. Recarregue a página para abrir novamente.</div>';
+                }
+            );
+            document.getElementById('modalConfirm').textContent = 'Fechar';
+            document.getElementById('modalConfirm').className = 'btn btn-danger';
+        }
+
+        // ============================================
+        // AUTO-CONFIGURE ON ISO SELECT
+        // ============================================
+        document.getElementById('partitionScheme').addEventListener('change', function() {
+            state.partitionScheme = this.value;
+            addLog(`Esquema de partição alterado: ${this.value.toUpperCase()}`, 'info');
+        });
+
+        document.getElementById('fileSystem').addEventListener('change', function() {
+            state.fileSystem = this.value;
+        });
+
+        document.getElementById('clusterSize').addEventListener('change', function() {
+            state.clusterSize = this.value;
+        });
+
+        document.getElementById('volumeLabel').addEventListener('input', function() {
+            state.volumeLabel = this.value || 'BOOT_USB';
+        });
+
+        // ============================================
+        // INIT
+        // ============================================
+        addLog('BootUSB Creator v4.2.1 inicializado', 'info');
+        addLog('Sistema pronto. Selecione um dispositivo e uma imagem.', 'info');
+    </script>
+</body>
+</html>
